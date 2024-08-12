@@ -8,8 +8,25 @@
   - name: install update (Ubuntu)
     tags: always
     apt:
-      upgrade: dist
       update_cache: yes
+    changed_when: false
+  
+- hosts: all
+  become: true
+  tasks:
+    
+    - name: create simone user
+      tags: always
+      user:
+        name: simone
+        groups: root  
+       
+    - name: add ssh key for simone
+      tags: always
+      authorized_key:
+        user: simone
+        key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFrLMeEYn7VkMSaLfsl4GzYZmGCDecfMc1DxdHOFBXXZ ansible"
+
 
 - hosts: workstations
   become: true
@@ -39,7 +56,29 @@
         - "{{ apache_package }}"
         - "{{ php_package }}"
       state: latest
-  
+
+  - name: start httpd
+    tags: apache,unbutu
+    service: 
+      name: apache2
+      state: started
+
+  - name: change e-mail address for admin
+    tags: apache,apache2
+    lineinfile:
+      path: /etc/apache2/sites-available/000-default.conf
+      regexp: '^ServerAdmin'
+      line: ServerAdmin somebody@somewhere.net
+    register: apache2
+
+  - name: restart apache2
+    tags: apache,apache2
+    service:
+      name: apache2
+      state: restarted
+    when: apache2.changed
+
+
   - name: copy html file for site
     tags: apache,apache2,httpd
     copy:
