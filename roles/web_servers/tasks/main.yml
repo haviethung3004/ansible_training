@@ -17,15 +17,8 @@
     lineinfile:
       path: /etc/apache2/sites-available/000-default.conf
       regexp: '^ServerAdmin'
-      line: ServerAdmin somebody@somewhere.net
-    register: apache2
-
-  - name: restart apache2
-    tags: apache,apache2
-    service:
-      name: apache2
-      state: restarted
-    when: apache2.changed
+      line: ServerAdmin somebody@somewhere.com
+    notify: restart_apache
 
 
   - name: copy html file for site
