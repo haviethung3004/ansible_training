@@ -1,0 +1,4 @@
+- name: install mariadb package
+  tags: db, mariadb
+  apt:
+    name: mariadb-server

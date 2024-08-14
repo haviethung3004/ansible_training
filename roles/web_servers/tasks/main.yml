@@ -1,0 +1,38 @@
+  - name: install apache2 and php package
+    tags: apache2,php
+    package:
+      name:
+        - "{{ apache_package }}"
+        - "{{ php_package }}"
+      state: latest
+
+  - name: start httpd
+    tags: apache,unbutu
+    service:
+      name: apache2
+      state: started
+
+  - name: change e-mail address for admin
+    tags: apache,apache2
+    lineinfile:
+      path: /etc/apache2/sites-available/000-default.conf
+      regexp: '^ServerAdmin'
+      line: ServerAdmin somebody@somewhere.net
+    register: apache2
+
+  - name: restart apache2
+    tags: apache,apache2
+    service:
+      name: apache2
+      state: restarted
+    when: apache2.changed
+
+
+  - name: copy html file for site
+    tags: apache,apache2,httpd
+    copy:
+      src: default_site.html
+      dest: /var/www/html/index.html
+      owner: root
+      group: root
+      mode: 0644
